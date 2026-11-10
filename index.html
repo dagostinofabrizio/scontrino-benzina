@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scontrino Benzina</title>
+<meta name="theme-color" content="#0e6a4e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon-64.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>
+  // Indirizzo dell'app vera (Google Apps Script, accesso "Solo io").
+  const APP_URL = 'https://script.google.com/macros/s/AKfycbxUbjump8OfOrgv25XniJk_8st1DWhSkFQDYDBl_m28eN2X3qNtJ7rtbTLFqdLu15BXgg/exec';
+  const standalone = matchMedia('(display-mode: standalone)').matches || new URLSearchParams(location.search).has('app');
+  if (standalone) location.replace(APP_URL);
+  // Se si torna indietro all'app installata, riapri l'app vera.
+  addEventListener('pageshow', (e) => { if (standalone && e.persisted) location.replace(APP_URL); });
+</script>
+<style>
+  :root { --bg: #f3f4f1; --card: #fff; --ink: #1a1f1c; --muted: #67706a; --line: #e0e4de; --accent: #0e6a4e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #101311; --card: #1a1e1b; --ink: #edf0ec; --muted: #98a19a; --line: #2a302c; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, Roboto, sans-serif; display: grid; place-items: center; padding: 24px 16px; }
+  .wrap { width: 100%; max-width: 420px; text-align: center; }
+  img.logo { width: 112px; height: 112px; border-radius: 26px; box-shadow: 0 8px 24px rgba(14,106,78,.25); }
+  h1 { font-size: 26px; margin: 18px 0 6px; }
+  p { color: var(--muted); margin: 0 0 24px; }
+  .btn { display: block; width: 100%; padding: 16px; border-radius: 14px; font-size: 17px; font-weight: 650;
+    text-decoration: none; border: 0; cursor: pointer; margin-bottom: 10px; }
+  .primary { background: var(--accent); color: #fff; }
+  .secondary { background: var(--card); color: var(--accent); border: 1px solid var(--line); }
+  .hint { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 15px;
+    color: var(--muted); text-align: left; margin-top: 14px; }
+  .hint b { color: var(--ink); }
+  [hidden] { display: none !important; }
+  .opening { color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <img class="logo" src="icon-512.png" alt="">
+    <h1>Scontrino Benzina</h1>
+    <div id="opening" class="opening" hidden>Apertura in corso…</div>
+    <div id="landing">
+      <p>Fotografa lo scontrino e richiedi la fattura con un tocco.</p>
+      <button class="btn primary" id="install" hidden>Installa l'app</button>
+      <a class="btn secondary" id="open" href="#">Apri l'app</a>
+      <div class="hint" id="hint">
+        Per avere l'icona sulla schermata Home: in Chrome tocca <b>⋮</b> e poi
+        <b>Aggiungi a schermata Home → Installa</b>.
+      </div>
+    </div>
+  </div>
+<script>
+  document.getElementById('open').href = APP_URL;
+  if (standalone) {
+    document.getElementById('landing').hidden = true;
+    document.getElementById('opening').hidden = false;
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+  let deferred = null;
+  addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferred = e;
+    document.getElementById('install').hidden = false;
+    document.getElementById('hint').hidden = true;
+  });
+  document.getElementById('install').onclick = async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    await deferred.userChoice;
+    deferred = null;
+    document.getElementById('install').hidden = true;
+  };
+  addEventListener('appinstalled', () => {
+    document.getElementById('install').hidden = true;
+    document.getElementById('hint').hidden = false;
+    document.getElementById('hint').innerHTML = '<b>Installata.</b> Ora apri "Scontrino Benzina" dalla schermata Home.';
+  });
+</script>
+</body>
+</html>
